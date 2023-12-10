@@ -1,0 +1,89 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Demo GitHub Actions
+
+# Controls when the workflow will run
+on: # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+
+  # Triggers the workflow on push event but only for the "main" branch and only if .js files were modified
+  push:
+    branches: [ "main" ]
+    paths:
+      - '**.js'
+
+  # Triggers the workflow on pull request but only for the "main" branch and only if .js files were modified
+  pull_request:
+    branches: [ "main" ]
+    types: [opened, closed]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+  # Runs your workflow when a label in your workflow's repository is created or modified
+  label:
+    types: [created, deleted]
+
+  # You can schedule a workflow to run at specific UTC times
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    # This example triggers the workflow every day at 5:30 and 17:30 UTC
+    - cron:  '30 5,17 * * *'
+ 
+# environment variables that are available to all jobs and steps in the workflow    
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  MY_VAR: my-value
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a job called "Job1"
+  Job1:
+    # The type of runner that the job will run on (VM or container)
+    runs-on: ubuntu-latest
+    # Runs the job only if the pull request was merged
+    # if: github.event.pull_request.merged == true
+    # Runs the job only if the pull request was merged or the pull request was closed and merged
+    # if: github.event_name == 'pull_request' || github.event.action == 'closed' && github.event.pull_request.merged == true
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, Job1!
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo I will run parallel to Job3 and before Job2.
+  
+
+  Job2:
+    # this job will run on Windows
+    runs-on: windows-latest
+    #this job wil only run when Job1 has completed successfully
+    needs: Job1
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run a one-line script
+        run: echo Hello, Job2!
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo I will only run when Job1 has completed successfully.
+
+  Job3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run a one-line script
+        run: echo Hello, Job3!
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo I will run parallel to Job1 and Job2.
+
+          
